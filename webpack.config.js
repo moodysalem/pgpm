@@ -57,7 +57,8 @@ const webpackConfig = {
 
   externals: {
     react: 'React',
-    'react-dom': 'ReactDOM'
+    'react-dom': 'ReactDOM',
+    openpgp: 'openpgp'
   }
 };
 

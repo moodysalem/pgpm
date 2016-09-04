@@ -2,7 +2,6 @@
  * The entry point for the application
  */
 import ReactDOM from "react-dom";
-import App from "./comps/app";
+import AppRouter from "./comps/AppRouter";
 
-
-ReactDOM.render(<App />, document.getElementById('app'));
+ReactDOM.render(<AppRouter />, document.getElementById('app'));

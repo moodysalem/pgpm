@@ -1,14 +1,36 @@
 import Promise from "bluebird";
-import openpgp from "openpgp";
+import {generateKey, key} from "openpgp";
 import localforage from "localforage";
 
 const KeyStore = localforage.createInstance({name: "KeyStore"});
 
 const LOCAL_STORAGE_KEY = 'keys';
 
-const getKeys = () => KeyStore.getItem(LOCAL_STORAGE_KEY);
+const getKeys = () => KeyStore.getItem(LOCAL_STORAGE_KEY).then(keys => keys || []);
 const setKeys = (keys) => KeyStore.setItem(LOCAL_STORAGE_KEY, keys);
 
+const toArmored = ({privateKeyArmored, publicKeyArmored}) => {
+  return {privateKeyArmored, publicKeyArmored};
+};
+
+const fromArmored = ({privateKeyArmored, publicKeyArmored}) => {
+  let k = null;
+  if (privateKeyArmored) {
+    k = openpgp.key.readArmored(privateKeyArmored);
+  } else {
+    k = openpgp.key.readArmored(publicKeyArmored);
+  }
+
+  if (k && k.keys && k.keys.length == 1) {
+    return k.keys[0];
+  }
+
+  return null;
+};
+
+/**
+ * This is a simplified wrapper around the openpgp API
+ */
 export default class KeyChain {
   static generateKey({name, email, numBits = 4096, passphrase = null}) {
     if (typeof name !== 'string' || name.length === 0) {
@@ -24,31 +46,23 @@ export default class KeyChain {
     }
 
     return new Promise((resolve, reject) => {
-      openpgp.generateKey({userIds: [{name, email}], numBits, passphrase})
-        .then((key)=> {
-          const {privateKeyArmored, publicKeyArmored} = key;
-          resolve({privateKeyArmored, publicKeyArmored});
-        }, (err) => {
+      generateKey({userIds: [{name, email}], numBits, passphrase})
+        .then((key) => resolve(toArmored(key)), (err) => {
           reject(new Error(`Failed to generate key for ${name} ${email} with length ${numBits}`));
         });
     });
   }
 
   /**
-   * Load keys from the 'keychain'
+   * Load keys from the keyring
    */
   static loadKeys() {
     return new Promise((resolve, reject) => {
-      getKeys()
-        .then((keys) => {
-          if (keys) {
-            resolve(keys);
-          } else {
-            resolve([]);
-          }
-        }, (err) => {
-          reject(new Error('Failed to load keys'));
-        });
+      getKeys().then((keys) => {
+        resolve(keys.map(fromArmored));
+      }, (err) => {
+        reject(new Error('Failed to load keys'));
+      });
     });
   }
 
@@ -72,14 +86,13 @@ export default class KeyChain {
     }
 
     return new Promise((resolve, reject) => {
-      KeyChain.loadKeys()
-        .then(keys => {
-          setKeys(keys.concat([{privateKeyArmored, publicKeyArmored}]))
-            .then(
-              () => resolve(),
-              () => reject(new Error('Failed to set keys into local storage'))
-            );
-        }, reject);
+      getKeys().then(keys => {
+        setKeys(keys.concat([{privateKeyArmored, publicKeyArmored}]))
+          .then(
+            () => resolve(),
+            () => reject(new Error('Failed to set keys into local storage'))
+          );
+      }, reject);
     });
   }
 };

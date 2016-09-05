@@ -1,4 +1,5 @@
 import React, {DOM, PropTypes, Component, PureComponent} from "react";
+import {Link} from "react-router";
 import KC from "../../util/KeyChain";
 
 export default class Keychain extends Component {
@@ -28,9 +29,9 @@ export default class Keychain extends Component {
 
     this.setState({
       generation: KC.generateKey({name, email})
-        .then((keyPair) => {
+        .then((key) => {
           onSuccess('Generated key!');
-          this.setState({generation: null, keyPair});
+          this.setState({generation: null, keyPair: key});
         }, (err) => {
           onError(err.message);
           this.setState({generation: null});
@@ -40,6 +41,8 @@ export default class Keychain extends Component {
 
   componentDidMount() {
     this.loadKeys();
+    const {name} = this.refs;
+    name.focus();
   }
 
   loadKeys() {
@@ -54,27 +57,34 @@ export default class Keychain extends Component {
 
     return (
       <div>
-        <div className="pure-form pure-form-stacked">
+        <div>
+          <Link to="/">Home</Link>
+        </div>
+        <form className="pure-form pure-form-stacked" onSubmit={(e) => {
+          e.preventDefault();
+          this.handleGenerate();
+        }}>
           <fieldset>
             <label>
               Name
-              <input disabled={generation != null} type="text" value={name}
+              <input ref="name" disabled={generation != null} type="text" value={name} required="true"
                      onChange={(e) => this.setState({name: e.target.value})}/>
             </label>
 
             <label>
               E-mail
-              <input disabled={generation != null} type="email" value={email}
+              <input disabled={generation != null} type="email" value={email} required="true"
                      onChange={(e) => this.setState({email: e.target.value})}/>
             </label>
           </fieldset>
 
-          <button className="pure-button pure-button-primary" onClick={this.handleGenerate}
-                  disabled={generation != null}>
-            Generate key!
+          <button className="pure-button pure-button-primary" type="submit" disabled={generation != null}>
+            {
+              generation == null ? 'Generate key!' : <span><i className="fa fa-refresh fa-spin"/>Working...</span>
+            }
           </button>
 
-        </div>
+        </form>
 
         <div>
           <label>
@@ -96,16 +106,21 @@ export default class Keychain extends Component {
 
         <div>
           {
-            keys.map(({privateKeyArmored, publicKeyArmored}, ix) => {
+            keys.map((key, ix) => {
+              const isPrivate = key.isPrivate();
+
+              const privateKey = isPrivate ? key.armor() : null,
+                publicKey = isPrivate ? key.toPublic().armor() : key.armor();
+
               return (
-                <div key={ix}>
-                  <div>Private Key</div>
-                  <div>
-                    <pre>{privateKeyArmored}</pre>
+                <div key={ix} className="display-flex">
+                  <div className="flex-grow-1 flex-shrink-1 flex-basis-0" style={{maxWidth: '50%'}}>
+                    <div>Private Key</div>
+                    <pre>{privateKey}</pre>
                   </div>
-                  <div>Public Key</div>
-                  <div>
-                    <pre>{publicKeyArmored}</pre>
+                  <div className="flex-grow-1 flex-shrink-1 flex-basis-0" style={{maxWidth: '50%'}}>
+                    <div>Public Key</div>
+                    <pre>{publicKey}</pre>
                   </div>
                 </div>
               );

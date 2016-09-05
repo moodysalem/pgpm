@@ -40,7 +40,7 @@ export default class Decrypt extends Component {
     return (
       <div>
         To decrypt message:
-        <textarea value={message} readOnly="true"/>
+        <pre>{message}</pre>
       </div>
     );
   }

@@ -15,7 +15,8 @@ const webpackConfig = {
 
   plugins: [
     new webpack.optimize.UglifyJsPlugin(),
-    new webpack.optimize.OccurenceOrderPlugin()
+    new webpack.optimize.OccurenceOrderPlugin(),
+    new webpack.optimize.DedupePlugin()
   ],
 
   resolve: {

@@ -1,12 +1,14 @@
 import React, {DOM, PropTypes, Component, PureComponent} from "react";
-import {generateKey} from "../../util/PGP";
+import KC from "../../util/KeyChain";
 
-export default class Home extends Component {
+export default class Keychain extends Component {
   state = {
     generation: null,
     name: '',
     email: '',
-    keyPair: null
+    passphrase: '',
+    keyPair: null,
+    keys: []
   };
 
   static contextTypes = {
@@ -25,7 +27,7 @@ export default class Home extends Component {
     }
 
     this.setState({
-      generation: generateKey({name, email})
+      generation: KC.generateKey({name, email})
         .then((keyPair) => {
           onSuccess('Generated key!');
           this.setState({generation: null, keyPair});
@@ -36,8 +38,19 @@ export default class Home extends Component {
     });
   };
 
+  componentDidMount() {
+    this.loadKeys();
+  }
+
+  loadKeys() {
+    KC.loadKeys()
+      .then(keys => {
+        this.setState({keys});
+      });
+  }
+
   render() {
-    const {name, email, keyPair, generation} = this.state;
+    const {name, email, keyPair, generation, keys} = this.state;
 
     return (
       <div>
@@ -72,6 +85,32 @@ export default class Home extends Component {
             Public Key
             <textarea value={keyPair ? keyPair.publicKeyArmored : ''} readOnly="true"/>
           </label>
+        </div>
+
+        <div>
+          <button className="pure-button pure-button-primary" disabled={keyPair == null}
+                  onClick={() => KC.addKey(keyPair).then(() => this.loadKeys())}>
+            Add to Keychain
+          </button>
+        </div>
+
+        <div>
+          {
+            keys.map(({privateKeyArmored, publicKeyArmored}, ix) => {
+              return (
+                <div key={ix}>
+                  <div>Private Key</div>
+                  <div>
+                    <pre>{privateKeyArmored}</pre>
+                  </div>
+                  <div>Public Key</div>
+                  <div>
+                    <pre>{publicKeyArmored}</pre>
+                  </div>
+                </div>
+              );
+            })
+          }
         </div>
       </div>
     );

@@ -27,7 +27,7 @@ export default class App extends Component {
     const {children} = this.props;
 
     return (
-      <div style={{height: '100%'}}>
+      <div style={{height: '100%'}} className="blue-grey lighten-5">
         <NotificationSystem ref="_ns"/>
         { children }
       </div>

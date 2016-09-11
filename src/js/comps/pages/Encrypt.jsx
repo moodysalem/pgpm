@@ -1,11 +1,11 @@
 import React, {DOM, PropTypes, Component, PureComponent} from "react";
-import {Link} from "react-router";
+import PageLink from './util/PageLink';
 
 export default class Encrypt extends Component {
   render() {
     return (
       <div>
-        <Link to="/">Home</Link>
+        <PageLink icon="home" to="/">Home</PageLink>
         To be continued...
       </div>
     );

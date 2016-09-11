@@ -1,5 +1,5 @@
 import React, {DOM, PropTypes, Component, PureComponent} from "react";
-import {Link} from "react-router";
+import PageLink from "./util/PageLink";
 import KC from "../../util/KeyChain";
 
 export default class Keychain extends Component {
@@ -58,9 +58,9 @@ export default class Keychain extends Component {
     return (
       <div>
         <div>
-          <Link to="/">Home</Link>
+          <PageLink icon="home" to="/">Home</PageLink>
         </div>
-        <form className="pure-form pure-form-stacked" onSubmit={(e) => {
+        <form onSubmit={(e) => {
           e.preventDefault();
           this.handleGenerate();
         }}>
@@ -78,7 +78,7 @@ export default class Keychain extends Component {
             </label>
           </fieldset>
 
-          <button className="pure-button pure-button-primary" type="submit" disabled={generation != null}>
+          <button className="btn" type="submit" disabled={generation != null}>
             {
               generation == null ? 'Generate key!' : <span><i className="fa fa-refresh fa-spin"/>Working...</span>
             }
@@ -86,19 +86,19 @@ export default class Keychain extends Component {
 
         </form>
 
-        <div>
-          <label>
+        <div className="display-flex">
+          <label className="flex-grow-1 flex-shrink-1 flex-basis-0">
             Private Key
-            <textarea value={keyPair ? keyPair.privateKeyArmored : ''} readOnly="true"/>
+            <textarea value={keyPair ? keyPair.privateKeyArmored : ''} style={{height: 400}} readOnly="true"/>
           </label>
-          <label>
+          <label className="flex-grow-1 flex-shrink-1 flex-basis-0">
             Public Key
-            <textarea value={keyPair ? keyPair.publicKeyArmored : ''} readOnly="true"/>
+            <textarea value={keyPair ? keyPair.publicKeyArmored : ''} style={{height: 400}} readOnly="true"/>
           </label>
         </div>
 
         <div>
-          <button className="pure-button pure-button-primary" disabled={keyPair == null}
+          <button className="btn" disabled={keyPair == null}
                   onClick={() => KC.addKey(keyPair).then(() => this.loadKeys())}>
             Add to Keychain
           </button>

@@ -1,18 +1,7 @@
 import React, {DOM, PropTypes, Component, PureComponent} from "react";
-import {Link} from "react-router";
-
-const PageLink = ({to, children, style, icon}) => {
-  return (
-    <Link className="pure-button pure-button-lg pure-button-primary"
-          to={to} style={style}>
-      <i key="icon" className={`fa fa-${icon}`}/>
-      <span key="span" style={{marginLeft: 4}}>{children}</span>
-    </Link>
-  );
-};
+import PageLink from "./util/PageLink";
 
 export default class Home extends Component {
-
   render() {
     return (
       <div className="display-flex align-items-center justify-content-center"
